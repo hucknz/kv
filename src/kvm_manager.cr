@@ -1,12 +1,3 @@
-  # Releases the given key (sends empty HID report)
-  def send_key_release(key : String, modifiers : Array(String) = [] of String)
-    # For HID, releasing a key means sending an empty report
-    empty_report = HIDKeyboard.create_keyboard_report([] of String, [] of String)
-    HIDKeyboard.send_keyboard_report(@keyboard_device.to_s, empty_report)
-    {success: true, message: "Key released: #{key}"}
-  rescue ex
-    Log.error { "Failed to release key: #{ex.message}" }
-    {success: false, message: "Error releasing key: #{ex.message}" }
 require "./keyboard"
 require "./mouse"
 require "./composite"
@@ -436,6 +427,17 @@ class KVMManagerV4cr
       Log.error { "Failed to send absolute mouse move: #{ex.message}" }
       {success: false, message: "Error sending absolute mouse move: #{ex.message}"}
     end
+  end
+
+  # Releases the given key (sends empty HID report)
+  def send_key_release(key : String, modifiers : Array(String) = [] of String)
+    # For HID, releasing a key means sending an empty report
+    empty_report = HIDKeyboard.create_keyboard_report([] of String, [] of String)
+    HIDKeyboard.send_keyboard_report(@keyboard_device.to_s, empty_report)
+    {success: true, message: "Key released: #{key}"}
+  rescue ex
+    Log.error { "Failed to release key: #{ex.message}" }
+    {success: false, message: "Error releasing key: #{ex.message}" }
   end
 
   def video_device

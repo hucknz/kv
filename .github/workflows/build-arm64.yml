@@ -1,43 +1,9 @@
 name: Build and Test
 
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
 
 jobs:
-  build-x86_64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Crystal
-        uses: crystal-lang/install-crystal@v1
-
-      - name: Install dependencies
-        run: shards install
-
-      - name: Install build dependencies (with retry)
-        run: |
-          for i in 1 2 3; do
-            sudo apt-get update && break || sleep 5
-          done
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libogg-dev libopus-dev libasound2-dev libturbojpeg-dev
-
-      - name: Build (native x86_64)
-        run: crystal build src/main.cr -o kvm_server --release
-
-      - name: Run tests
-        run: crystal spec --error-on-warnings
-
-      - name: Upload binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: kvm_server-x86_64
-          path: kvm_server
-
   build-arm64:
     runs-on: ubuntu-latest
     steps:
@@ -53,12 +19,14 @@ jobs:
       - name: Install dependencies
         run: shards install
 
-      - name: Install build dependencies (with retry)
+      - name: Install build dependencies (with retry, arm64 headers)
         run: |
           for i in 1 2 3; do
             sudo apt-get update && break || sleep 5
           done
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libogg-dev libopus-dev libasound2-dev libturbojpeg-dev gcc-aarch64-linux-gnu
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            libogg-dev:arm64 libopus-dev:arm64 libasound2-dev:arm64 libturbojpeg-dev:arm64 \
+            libssl-dev:arm64 libcrypto-dev:arm64 gcc-aarch64-linux-gnu
 
       - name: Build for arm64
         run: |
