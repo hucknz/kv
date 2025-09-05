@@ -1,0 +1,36 @@
+# .github/workflows/build-arm64.yml
+name: Build kvm_server for arm64
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-arm64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU for arm64
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Crystal
+        uses: crystal-lang/install-crystal@v1
+
+      - name: Install dependencies
+        run: shards install
+
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y libogg-dev libopus-dev libasound2-dev libturbojpeg-dev
+
+      - name: Build for arm64
+        run: |
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+          export CC=aarch64-linux-gnu-gcc
+          crystal build src/main.cr -o kvm_server-arm64 --release --cross-compile --target aarch64-linux-gnu
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: kvm_server-arm64
+          path: kvm_server-arm64
