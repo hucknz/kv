@@ -21,7 +21,10 @@ jobs:
         run: shards install
 
       - name: Install build dependencies
-        run: sudo apt-get update && sudo apt-get install -y libogg-dev libopus-dev libasound2-dev libturbojpeg-dev
+        run: |
+          sudo dpkg --add-architecture arm64
+          sudo apt-get update
+          sudo apt-get install -y libogg-dev:arm64 libopus-dev:arm64 libasound2-dev:arm64 libturbojpeg-dev:arm64 libssl-dev:arm64 gcc-aarch64-linux-gnu
 
       - name: Build for arm64
         run: |
