@@ -62,6 +62,11 @@ ws "/ws/input" do |socket|
       event_type = data["type"]?.try(&.as_s)
 
       case event_type
+    when "key_release"
+      key = data["key"]?.try(&.as_s)
+      modifiers = data["modifiers"]?.try(&.as_a.map(&.as_s)) || [] of String
+      result = manager.send_key_release(key, modifiers)
+      handle_result.call(result)
       when "mouse_move"
         x_delta = data["x"]?.try(&.as_i) || 0
         y_delta = data["y"]?.try(&.as_i) || 0
@@ -134,6 +139,6 @@ ws "/ws/input" do |socket|
   end
 
   socket.on_close do
-    Log.debug { "WebSocket client disconnected" }
+  Log.debug { "WebSocket client disconnected" }
   end
 end
