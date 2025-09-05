@@ -430,11 +430,12 @@ class KVMManagerV4cr
   end
 
   # Releases the given key (sends empty HID report)
-  def send_key_release(key : String, modifiers : Array(String) = [] of String)
+  def send_key_release(key : String | Nil, modifiers : Array(String) = [] of String)
+    key_str = key || ""
     # For HID, releasing a key means sending an empty report
     empty_report = HIDKeyboard.create_keyboard_report([] of String, [] of String)
     HIDKeyboard.send_keyboard_report(@keyboard_device.to_s, empty_report)
-    {success: true, message: "Key released: #{key}"}
+    {success: true, message: "Key released: #{key_str}"}
   rescue ex
     Log.error { "Failed to release key: #{ex.message}" }
     {success: false, message: "Error releasing key: #{ex.message}" }
