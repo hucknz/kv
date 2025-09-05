@@ -10,14 +10,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Crystal
-        uses: crystal-lang/install-crystal@v1
+      - name: Add 84codes Crystal apt repo and install Crystal
+        run: |
+          curl -fsSL https://packagecloud.io/84codes/crystal/gpgkey | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/84codes_crystal.gpg > /dev/null
+          . /etc/os-release
+          echo "deb https://packagecloud.io/84codes/crystal/$ID $VERSION_CODENAME main" | sudo tee /etc/apt/sources.list.d/84codes_crystal.list
+          sudo apt-get update
+          sudo apt-get install -y crystal
 
       - name: Install dependencies
         run: shards install
 
       - name: Install build dependencies
-        run: sudo apt-get update && sudo apt-get install -y libogg-dev libopus-dev libasound2-dev libturbojpeg-dev libssl-dev
+        run: sudo apt-get install -y libogg-dev libopus-dev libasound2-dev libturbojpeg-dev libssl-dev
 
       - name: Build
         run: crystal build src/main.cr -o kvm_server --release
