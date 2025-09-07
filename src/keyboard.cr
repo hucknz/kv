@@ -93,11 +93,16 @@ module HIDKeyboard
   # Robust write that blocks until 'buf' is fully written (handles EINTR/EAGAIN)
   private def self.write_all(fd : Int32, buf : Bytes) : Bool
     total = 0
-    base = buf.to_unsafe
     len = buf.size
 
     while total < len
-      rc = LibC.write(fd, (base + total).as(Pointer(Void)), (len - total).to_size_t)
+      ptr = (buf.to_unsafe + total).as(Pointer(Void))
+      to_write = len - total
+
+      # Convert to LibC::SizeT portably (UInt32 on 32-bit, UInt64 on 64-bit)
+      size_to_write = (sizeof(LibC::SizeT) == 8 ? to_write.to_u64 : to_write.to_u32)
+
+      rc = LibC.write(fd, ptr, size_to_write)
       if rc < 0
         errno_val = Errno.value
         if errno_val == Errno::EINTR || errno_val == Errno::EAGAIN || errno_val == Errno::EWOULDBLOCK
@@ -108,7 +113,7 @@ module HIDKeyboard
           return false
         end
       else
-        total += rc
+        total += rc.to_i
       end
     end
     true
